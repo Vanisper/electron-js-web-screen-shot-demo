@@ -72,6 +72,7 @@ jobs:
           # 将 FILE_EXT 环境变量的值设置为全局变量，以便后续步骤中使用
           echo "FILE_NAME=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "FILE_EXT=$FILE_EXT" >> $GITHUB_OUTPUT
+          exit 0
 
       - name: Upload Release Asset
         id: upload-release-asset
