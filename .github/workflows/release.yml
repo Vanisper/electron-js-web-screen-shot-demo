@@ -54,6 +54,7 @@ jobs:
           body: | # release 说明
             This is the release note for version 1.0.0.
       - name: Set Upload File Name
+        id: set-upload-file-name
         run: |
           # 对于 macOS, 将文件名设置为 demo-mac.dmg
           if [ ${{ matrix.os }} = 'macos-latest' ]; then
@@ -69,8 +70,8 @@ jobs:
             export FILE_EXT=AppImage
           fi
           # 将 FILE_EXT 环境变量的值设置为全局变量，以便后续步骤中使用
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-          echo "FILE_EXT=$FILE_EXT" >> $GITHUB_ENV
+          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "FILE_EXT=$FILE_EXT" >> $GITHUB_OUTPUT
 
       - name: Upload Release Asset
         id: upload-release-asset
@@ -79,8 +80,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/demo_*.${{ FILE_EXT }} # 上传的文件路径
-          asset_name: ${{ FILE_NAME }} # 上传的文件名
+          asset_path: release/demo_*.${{ steps.set-upload-file-name.FILE_EXT }} # 上传的文件路径
+          asset_name: ${{ steps.set-upload-file-name.FILE_NAME }} # 上传的文件名
           asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
 
 
