@@ -12,7 +12,7 @@ dist
 dist-ssr
 dist-electron
 *.local
-pnpm-lock.yaml
+# pnpm-lock.yaml
 release
 
 # Editor directories and files
