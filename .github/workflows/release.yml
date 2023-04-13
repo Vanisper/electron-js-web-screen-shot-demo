@@ -29,6 +29,13 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Build App with Vite
         run: pnpm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          path: |
+            release/demo_\d+\.\d+\.\d+\.dmg(\.blockmap)?$
+            release\\demo_\d+\.\d+\.\d+\.exe(\.blockmap)?$
+            release/demo-\d+\.\d+\.\d+.(AppImage|snap)$
+
   # # 工作的名称“编译windows版”
   # buildwin:
   #   # 运行的操作系统 windows server 2022

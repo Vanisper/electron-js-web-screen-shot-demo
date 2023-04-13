@@ -40,6 +40,9 @@
         "dmg"
       ]
     },
+    "linux": {
+      "artifactName": "${productName}_${version}.${ext}"
+    },
     "win": {
       "target": [
         {
