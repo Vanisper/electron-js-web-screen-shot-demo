@@ -81,8 +81,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/demo_*.${{ steps.set-upload-file-name.FILE_EXT }} # 上传的文件路径
-          asset_name: ${{ steps.set-upload-file-name.FILE_NAME }} # 上传的文件名
+          asset_path: release/demo_*.${{ steps.set-upload-file-name.outputs.FILE_EXT }} # 上传的文件路径
+          asset_name: ${{ steps.set-upload-file-name.outputs.FILE_NAME }} # 上传的文件名
           asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
 
 
