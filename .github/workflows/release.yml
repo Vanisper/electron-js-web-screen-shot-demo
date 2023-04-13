@@ -29,17 +29,17 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Build App with Vite
         run: pnpm run build
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.os }}
-          path: |
-            release/demo_?.?.?.dmg*
-            release/mac
-            release/demo_?.?.?.exe*
-            release/win-unpacked
-            release/demo_?.?.?.AppImage
-            release/demo_?.?.?.snap
-            release/linux-unpacked
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ matrix.os }}
+      #     path: |
+      #       release/demo_?.?.?.dmg*
+      #       release/mac
+      #       release/demo_?.?.?.exe*
+      #       release/win-unpacked
+      #       release/demo_?.?.?.AppImage
+      #       release/demo_?.?.?.snap
+      #       release/linux-unpacked
 
       - name: Create Release
         uses: actions/create-release@v1.0.0
