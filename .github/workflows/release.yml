@@ -68,6 +68,9 @@ jobs:
             export FILE_NAME=demo-linux.AppImage
             export FILE_EXT=AppImage
           fi
+          # 将 FILE_EXT 环境变量的值设置为全局变量，以便后续步骤中使用
+          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+          echo "FILE_EXT=$FILE_EXT" >> $GITHUB_ENV
 
       - name: Upload Release Asset
         id: upload-release-asset
@@ -76,8 +79,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/demo_*.${{ env.FILE_EXT }} # 上传的文件路径
-          asset_name: ${{ env.FILE_NAME }} # 上传的文件名
+          asset_path: release/demo_*.${{ FILE_EXT }} # 上传的文件路径
+          asset_name: ${{ FILE_NAME }} # 上传的文件名
           asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
 
 
