@@ -4,6 +4,8 @@ name: Releases
 on:
   # workflow_dispatch为在Github仓库的Actions面板中手动执行
   workflow_dispatch:
+    tags:
+      - "*"
 # 工作/任务，这里的工作是可以并行的。
 jobs:
   release:
