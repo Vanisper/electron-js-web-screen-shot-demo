@@ -76,7 +76,7 @@ jobs:
           asset_path: release/demo_*.${{ env.FILE_EXT }} # 上传的文件路径
           asset_name: ${{ env.FILE_NAME }} # 上传的文件名
           asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
-          release_id: ${{ steps.create_release.outputs.id }} # release 的 id
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
 
 
   # # 工作的名称“编译windows版”
