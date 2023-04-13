@@ -31,6 +31,8 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Build App with Vite
         run: pnpm run build
+        env:
+           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}
@@ -42,8 +44,6 @@ jobs:
             release/demo_?.?.?.AppImage
             release/demo_?.?.?.snap
             release/linux-unpacked
-        env:
-           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
   # # 工作的名称“编译windows版”
   # buildwin:
