@@ -1,0 +1,33 @@
+name: build
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    # 步骤
+    steps:
+      # 使用预制action：拉取最新的代码
+      - uses: actions/checkout@v3
+      # 步骤一的名称：
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Build App with Vite
+        run: pnpm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
