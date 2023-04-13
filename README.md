@@ -9,7 +9,7 @@
 - `electron` -D
 - `electron-builder` -D
 - `less` -D
-- `js-web-screen-shot` -D
+- `js-web-screen-shot` -S
 
 ## 步骤
 
