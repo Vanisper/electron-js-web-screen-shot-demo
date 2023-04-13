@@ -40,43 +40,44 @@ jobs:
             release/demo_?.?.?.AppImage
             release/demo_?.?.?.snap
             release/linux-unpacked
-            
+
       - name: Create Release
         uses: actions/create-release@v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v1.0.0  # release tag 名称
-          release_name: Release v1.0.0  # release 名称
-          draft: false  # 是否发布为草稿状态
-          prerelease: false  # 是否是预览版本
-          body: |  # release 说明
+          tag_name: v1.0.0 # release tag 名称
+          release_name: Release v1.0.0 # release 名称
+          draft: false # 是否发布为草稿状态
+          prerelease: false # 是否是预览版本
+          body: | # release 说明
             This is the release note for version 1.0.0.
       - name: Set Upload File Name
-          run: |
-            # 对于 macOS, 将文件名设置为 demo-mac.dmg
-            if [ ${{ matrix.os }} = 'macos-latest' ]; then
-              export FILE_NAME=demo-mac.dmg
-              export FILE_EXT=dmg
-            # 对于 Windows, 将文件名设置为 demo-windows.exe
-            elif [ ${{ matrix.os }} = 'windows-latest' ]; then
-              export FILE_NAME=demo-windows.exe
-              export FILE_EXT=exe
-            # 对于 Linux, 将文件名设置为 demo-linux.AppImage
-            elif [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
-              export FILE_NAME=demo-linux.AppImage
-              export FILE_EXT=AppImage
-            fi
+        run: |
+          # 对于 macOS, 将文件名设置为 demo-mac.dmg
+          if [ ${{ matrix.os }} = 'macos-latest' ]; then
+            export FILE_NAME=demo-mac.dmg
+            export FILE_EXT=dmg
+          # 对于 Windows, 将文件名设置为 demo-windows.exe
+          elif [ ${{ matrix.os }} = 'windows-latest' ]; then
+            export FILE_NAME=demo-windows.exe
+            export FILE_EXT=exe
+          # 对于 Linux, 将文件名设置为 demo-linux.AppImage
+          elif [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
+            export FILE_NAME=demo-linux.AppImage
+            export FILE_EXT=AppImage
+          fi
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_path: release/demo_*.${{ env.FILE_EXT }}  # 上传的文件路径
-          asset_name: ${{ env.FILE_NAME }}  # 上传的文件名
-          asset_content_type: application/x-diskcopy  # 上传的文件 MIME 类型
-          release_id: ${{ steps.create_release.outputs.id }}  # release 的 id
+          asset_path: release/demo_*.${{ env.FILE_EXT }} # 上传的文件路径
+          asset_name: ${{ env.FILE_NAME }} # 上传的文件名
+          asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
+          release_id: ${{ steps.create_release.outputs.id }} # release 的 id
+
 
   # # 工作的名称“编译windows版”
   # buildwin:
