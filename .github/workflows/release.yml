@@ -29,102 +29,53 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Build App with Vite
         run: pnpm run build
-      # - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}
+          path: |
+            release/demo_?.?.?.dmg*
+            release/mac
+            release/demo_?.?.?.exe*
+            release/win-unpacked
+            release/demo_?.?.?.AppImage
+            release/demo_?.?.?.snap
+            release/linux-unpacked
+
+      # - name: Create or Get Release
+      #   uses: marvinpinto/action-automatic-releases@latest
       #   with:
-      #     name: ${{ matrix.os }}
-      #     path: |
-      #       release/demo_?.?.?.dmg*
-      #       release/mac
-      #       release/demo_?.?.?.exe*
-      #       release/win-unpacked
-      #       release/demo_?.?.?.AppImage
-      #       release/demo_?.?.?.snap
-      #       release/linux-unpacked
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     automatic_release_tag: true
+      #     prerelease: true
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v0.0.0 # release tag 名称
-          release_name: Release v0.0.0 # release 名称
-          draft: false # 是否发布为草稿状态
-          prerelease: false # 是否是预览版本
-          body: | # release 说明
-            This is the release note for version 0.0.0.
-      - name: Set Upload File Name
-        id: set-upload-file-name
-        run: |
-          # 对于 macOS, 将文件名设置为 demo-mac.dmg
-          if [ ${{ matrix.os }} = 'macos-latest' ]; then
-            export FILE_NAME=demo-mac.dmg
-            export FILE_EXT=dmg
-          # 对于 Windows, 将文件名设置为 demo-windows.exe
-          elif [ ${{ matrix.os }} = 'windows-latest' ]; then
-            export FILE_NAME=demo-windows.exe
-            export FILE_EXT=exe
-          # 对于 Linux, 将文件名设置为 demo-linux.AppImage
-          elif [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
-            export FILE_NAME=demo-linux.AppImage
-            export FILE_EXT=AppImage
-          fi
-          # 将 FILE_EXT 环境变量的值设置为全局变量，以便后续步骤中使用
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "FILE_EXT=$FILE_EXT" >> $GITHUB_OUTPUT
-          exit 0
+      # - name: Set Upload File Name
+      #   id: set-upload-file-name
+      #   run: |
+      #     # 对于 macOS, 将文件名设置为 demo-mac.dmg
+      #     if [ ${{ matrix.os }} = 'macos-latest' ]; then
+      #       export FILE_NAME=demo-mac.dmg
+      #       export FILE_EXT=dmg
+      #     # 对于 Windows, 将文件名设置为 demo-windows.exe
+      #     elif [ ${{ matrix.os }} = 'windows-latest' ]; then
+      #       export FILE_NAME=demo-windows.exe
+      #       export FILE_EXT=exe
+      #     # 对于 Linux, 将文件名设置为 demo-linux.AppImage
+      #     elif [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
+      #       export FILE_NAME=demo-linux.AppImage
+      #       export FILE_EXT=AppImage
+      #     fi
+      #     # 将 FILE_EXT 环境变量的值设置为全局变量，以便后续步骤中使用
+      #     echo "FILE_NAME=$FILE_NAME" >> $GITHUB_OUTPUT
+      #     echo "FILE_EXT=$FILE_EXT" >> $GITHUB_OUTPUT
+      #     exit 0
 
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/demo_0.0.0.${{ steps.set-upload-file-name.outputs.FILE_EXT }} # 上传的文件路径
-          asset_name: ${{ steps.set-upload-file-name.outputs.FILE_NAME }} # 上传的文件名
-          asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
-
-
-  # # 工作的名称“编译windows版”
-  # buildwin:
-  #   # 运行的操作系统 windows server 2022
-  #   runs-on: windows-2022
-  #   # 步骤
-  #   steps:
-  #     # 使用预制action：拉取最新的代码
-  #     - uses: actions/checkout@v2
-  #     # 步骤一的名称：
-  #     - name: Install and Build
-  #       # 该步骤运行的终端命令，进入仓库的src目录，安装依赖，运行编译命令
-  #       run: cd src && npm install && npm run buildwin
-  #     # 步骤二的名称：将编译后的结果上传
-  #     - name: Upload File
-  #       # 使用预制action：上传文件，可以将执行路径打包成zip上传
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         # 上传后文件的名称
-  #         name: windows
-  #         # 打包的路径以及文件过滤，此为仅打包dist目录下的exe文件
-  #         path: dist/*exe
-  # # 工作的名称“编译macOS版”
-  # buildmac:
-  #   # 运行的操作系统 macOS BigSur
-  #   runs-on: macos-11
-  #   # 步骤
-  #   steps:
-  #     # 使用预制action：拉取最新的代码
-  #     - uses: actions/checkout@v2
-  #     # 步骤一的名称：
-  #     - name: Install and Build
-  #       # 该步骤运行的终端命令，进入仓库的src目录，安装依赖，运行编译命令
-  #       run: cd src && npm install && npm run buildmac
-  #     # 步骤二的名称：将编译后的结果上传
-  #     - name: Upload File
-  #       # 使用预制action：上传文件，可以将执行路径打包成zip上传
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         # 上传后文件的名称
-  #         name: mac
-  #         # 打包的路径以及文件过滤，此为仅打包dist目录下的dmg文件
-  #         path: dist/*dmg
+      # - name: Upload Release Asset
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1.0.0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: release/demo_0.0.0.${{ steps.set-upload-file-name.outputs.FILE_EXT }} # 上传的文件路径
+      #     asset_name: ${{ steps.set-upload-file-name.outputs.FILE_NAME }} # 上传的文件名
+      #     asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
