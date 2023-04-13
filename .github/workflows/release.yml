@@ -34,9 +34,12 @@ jobs:
           name: ${{ matrix.os }}
           path: |
             release/demo_?.?.?.dmg*
+            release/mac
             release/demo_?.?.?.exe*
+            release/win-unpacked
             release/demo_?.?.?.AppImage
             release/demo_?.?.?.snap
+            release/linux-unpacked
 
   # # 工作的名称“编译windows版”
   # buildwin:
