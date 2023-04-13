@@ -26,7 +26,7 @@ jobs:
           node-version: "18"
           cache: pnpm
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install
       - name: Build App with Vite
         run: pnpm run build
   # # 工作的名称“编译windows版”
