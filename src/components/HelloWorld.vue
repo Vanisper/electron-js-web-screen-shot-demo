@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ScreenShot from "js-web-screen-shot";
-import { getDesktopCapturerSource } from '../xxx';
-import { getInitStream } from '../yyy';
+import { getDesktopCapturerSource } from '../utils/xxx';
+import { getInitStream } from '../utils/yyy';
 import VueIcon from "../assets/vue.svg";
 
 defineProps<{ msg: string }>()
