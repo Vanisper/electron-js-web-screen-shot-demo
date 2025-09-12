@@ -1,81 +1,221 @@
-# 此工作流的名字
-name: Releases
-# 工作流的执行时机，可以设定为定时执行，每次push后执行，手动执行等
-on:
-  # workflow_dispatch为在Github仓库的Actions面板中手动执行
-  workflow_dispatch:
-# 工作/任务，这里的工作是可以并行的。
-jobs:
-  release:
-    runs-on: ${{ matrix.os }}
+name: Electron Release
 
+# 写入 GitHub Release 的权限
+permissions:
+  contents: write
+
+# 当你推送一个以 'v' 开头的 tag 时触发 (例如 v1.0.0, v2.3.1)
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # -------------------------------------------------------------------
+  # 任务 0: 设置全局变量
+  # -------------------------------------------------------------------
+  setup:
+    name: ⚙️ Setup Global Variables
+    runs-on: ubuntu-latest
+    outputs:
+      product_name: ${{ steps.vars.outputs.product_name }}
+      app_version: ${{ steps.vars.outputs.app_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 从 package.json 中读取 productName 和 version
+      - name: Extract variables from package.json
+        id: vars
+        shell: bash
+        run: |
+          # 使用 jq 工具解析 JSON 文件
+          # strip_quotes 函数用于移除字符串两边的引号
+          strip_quotes() {
+            local input="$1"
+            # 移除开头和结尾的引号
+            input="${input#\"}"
+            input="${input%\"}"
+            echo "$input"
+          }
+          
+          # 提取 version (例如 "1.2.3")
+          APP_VERSION=$(jq '.version' package.json | xargs)
+          
+          # 提取 productName。注意：jq 默认会带引号输出，需要移除
+          PRODUCT_NAME=$(strip_quotes "$(jq '.build.productName' package.json)")
+          
+          echo "product_name=$PRODUCT_NAME" >> $GITHUB_OUTPUT
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+
+  # -------------------------------------------------------------------
+  # 任务 1: 生成发布说明
+  # -------------------------------------------------------------------
+  generate-release-notes:
+    name: 📜 Generate Release Notes
+    runs-on: ubuntu-latest
+    outputs:
+      release_notes: ${{ steps.generate_release_notes.outputs.release_notes }}
+      current_tag: ${{ steps.get_tags.outputs.current_tag }}
+    steps:
+      # 检出代码，fetch-depth: 0 表示获取所有历史记录，以便读取 git log
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 获取当前和上一个标签，用于确定 commit 范围
+      - name: Get current and previous tags
+        id: get_tags
+        run: |
+          tags=($(git tag -l --sort=-version:refname))
+          current_tag=${tags[0]}
+          # 如果只有一个 tag，就将上一个 tag 设为空
+          previous_tag=${tags[1]:-$(git rev-list --max-parents=0 HEAD)}
+          echo "previous_tag=$previous_tag" >> $GITHUB_OUTPUT
+          echo "current_tag=$current_tag" >> $GITHUB_OUTPUT
+
+      # 提取并分类 commit 信息，生成 Markdown 格式的发布说明
+      - name: Generate Release Notes from Commits
+        id: generate_release_notes
+        run: |
+          # 函数: 用于格式化每个分类的 commit
+          format_messages() {
+            local title="$1"
+            local messages="$2"
+            local output=""
+            if [[ -n "$messages" ]]; then
+              output+="\n### $title\n"
+              output+=$(echo "$messages" | awk '{print "- " $0}')
+            fi
+            echo -e "$output"
+          }
+
+          # 获取两个 tag 之间的 commit log
+          COMMIT_LOGS=$(git log --pretty=format:"%s - by @%an (%h)" ${{ steps.get_tags.outputs.previous_tag }}..${{ steps.get_tags.outputs.current_tag }})
+
+          # 按类型筛选 commit
+          FEAT_MESSAGES=$(echo "$COMMIT_LOGS" | grep -E '^feat' || true)
+          FIX_MESSAGES=$(echo "$COMMIT_LOGS" | grep -E '^fix' || true)
+          DOCS_MESSAGES=$(echo "$COMMIT_LOGS" | grep -E '^docs' || true)
+          PERF_MESSAGES=$(echo "$COMMIT_LOGS" | grep -E '^perf' || true)
+          CHORE_MESSAGES=$(echo "$COMMIT_LOGS" | grep -E '^chore' || true)
+
+          # 组合成完整的发布说明
+          RELEASE_NOTES=""
+          RELEASE_NOTES+=$(format_messages "🚀 Features (新功能)" "$FEAT_MESSAGES")
+          RELEASE_NOTES+=$(format_messages "🩹 Fixes (缺陷修复)" "$FIX_MESSAGES")
+          RELEASE_NOTES+=$(format_messages "📖 Documentation (文档)" "$DOCS_MESSAGES")
+          RELEASE_NOTES+=$(format_messages "🔥 Performance (性能优化)" "$PERF_MESSAGES")
+          RELEASE_NOTES+=$(format_messages "🧹 Chores (杂项)" "$CHORE_MESSAGES")
+
+          # 使用 EOF 来处理多行文本，并将其设置为 GitHub Action 的输出
+          {
+            echo 'release_notes<<EOF'
+            echo -e "$RELEASE_NOTES"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+  # -------------------------------------------------------------------
+  # 任务 2: 并行构建
+  # -------------------------------------------------------------------
+  build:
+    name: 💻 Build on ${{ matrix.os }}
+    needs: [setup, generate-release-notes] # 等待之前任务完成
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        # 在这三个操作系统上并行运行
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
-    # 步骤
     steps:
-      # 使用预制action：拉取最新的代码
-      - uses: actions/checkout@v3
-      # 步骤一的名称：
-      - name: Install pnpm
-        run: npm install -g pnpm@7.33.7
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "18"
-          cache: pnpm
+          version: 7.33.7
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # Node.js 版本
+          cache: pnpm # 缓存 pnpm
+
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-      - name: Build App with Vite
+        run: pnpm install --frozen-lockfile
+
+      # 执行构建命令，electron-builder 会自动识别当前系统并打包
+      - name: Build Electron app
         run: pnpm run build
-      - uses: actions/upload-artifact@v3
+
+      # --- 使用全局变量来命名压缩包 ---
+      - name: Compress Portable/Unpacked Directories
+        shell: bash
+        run: |
+          # 从 needs 上下文中获取变量
+          PRODUCT_NAME="${{ needs.setup.outputs.product_name }}"
+          APP_VERSION="${{ needs.setup.outputs.app_version }}"
+
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            if [ -d "release/win-unpacked" ]; then
+              powershell -Command "Compress-Archive -Path release/win-unpacked -DestinationPath release/${PRODUCT_NAME}-${APP_VERSION}-portable-win.zip"
+            fi
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            if [ -d "release/mac" ]; then
+              zip -r "release/${PRODUCT_NAME}-${APP_VERSION}-portable-mac-x64.zip" release/mac
+            fi
+            if [ -d "release/mac-arm64" ]; then
+              zip -r "release/${PRODUCT_NAME}-${APP_VERSION}-portable-mac-arm64.zip" release/mac-arm64
+            fi
+          else # Linux
+            if [ -d "release/linux-unpacked" ]; then
+              zip -r "release/${PRODUCT_NAME}-${APP_VERSION}-portable-linux.zip" release/linux-unpacked
+            fi
+          fi
+
+      # 上传构建产物，为 release 任务做准备
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}
+          name: ${{ needs.setup.outputs.product_name }}-${{ matrix.os }} # 用系统名区分产物
           path: |
             release/demo_?.?.?.dmg*
-            release/mac
             release/demo_?.?.?.exe*
-            release/win-unpacked
             release/demo_?.?.?.AppImage
             release/demo_?.?.?.snap
-            release/linux-unpacked
+            release/*.zip
 
-      # - name: Create or Get Release
-      #   uses: marvinpinto/action-automatic-releases@latest
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     automatic_release_tag: true
-      #     prerelease: true
+  # -------------------------------------------------------------------
+  # 任务 3: 创建 GitHub Release
+  # -------------------------------------------------------------------
+  release:
+    name: 📦 Create GitHub Release
+    needs: [setup, generate-release-notes, build] # 等待笔记生成和所有构建任务完成
+    runs-on: ubuntu-latest
 
-      # - name: Set Upload File Name
-      #   id: set-upload-file-name
-      #   run: |
-      #     # 对于 macOS, 将文件名设置为 demo-mac.dmg
-      #     if [ ${{ matrix.os }} = 'macos-latest' ]; then
-      #       export FILE_NAME=demo-mac.dmg
-      #       export FILE_EXT=dmg
-      #     # 对于 Windows, 将文件名设置为 demo-windows.exe
-      #     elif [ ${{ matrix.os }} = 'windows-latest' ]; then
-      #       export FILE_NAME=demo-windows.exe
-      #       export FILE_EXT=exe
-      #     # 对于 Linux, 将文件名设置为 demo-linux.AppImage
-      #     elif [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
-      #       export FILE_NAME=demo-linux.AppImage
-      #       export FILE_EXT=AppImage
-      #     fi
-      #     # 将 FILE_EXT 环境变量的值设置为全局变量，以便后续步骤中使用
-      #     echo "FILE_NAME=$FILE_NAME" >> $GITHUB_OUTPUT
-      #     echo "FILE_EXT=$FILE_EXT" >> $GITHUB_OUTPUT
-      #     exit 0
+    steps:
+      # 下载所有由 build 任务上传的构建产物
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts # 下载到 artifacts 目录
 
-      # - name: Upload Release Asset
-      #   id: upload-release-asset
-      #   uses: actions/upload-release-asset@v1.0.0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: release/demo_0.0.0.${{ steps.set-upload-file-name.outputs.FILE_EXT }} # 上传的文件路径
-      #     asset_name: ${{ steps.set-upload-file-name.outputs.FILE_NAME }} # 上传的文件名
-      #     asset_content_type: application/x-diskcopy # 上传的文件 MIME 类型
+      # 使用 ncipollo/release-action 创建 Release
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ needs.setup.outputs.product_name }} v${{ needs.setup.outputs.app_version }}
+          # 从下载的产物中匹配所有文件并上传
+          # 'artifacts/*/*' 模式会匹配如 artifacts/electron-app-macos-latest/MyApp.dmg 这样的文件
+          artifacts: "artifacts/*/*"
+          # 从 generate-release-notes 任务获取发布说明
+          body: ${{ needs.generate-release-notes.outputs.release_notes }}
+          # 从 generate-release-notes 任务获取 tag
+          tag: ${{ needs.generate-release-notes.outputs.current_tag }}
+          # 自动生成的 release 默认为预发布，你可以在 GitHub 上手动设为正式版
+          prerelease: true
+          # GITHUB_TOKEN 是由 GitHub Actions 自动提供的
+          token: ${{ secrets.GITHUB_TOKEN }}
