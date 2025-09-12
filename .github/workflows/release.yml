@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v3
       # 步骤一的名称：
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm@7.33.7
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
