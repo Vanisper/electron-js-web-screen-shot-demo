@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import ScreenShot from "js-web-screen-shot";
 import { getDesktopCapturerSource } from '../xxx';
 import { getInitStream } from '../yyy';
+import VueIcon from "../assets/vue.svg";
 
 defineProps<{ msg: string }>()
 
@@ -19,6 +20,16 @@ const doScreenShot = async () => {
     enableWebRtc: true, // 启用webrtc
     screenFlow: stream!, // 传入屏幕流数据
     level: 999,
+    userToolbar: [
+      {
+        title: "截图",
+        icon: VueIcon,
+        activeIcon: VueIcon,
+        clickFn() {
+          console.log("自定义按钮被点击了");
+        },
+      }
+    ]
   });
 }
 </script>
