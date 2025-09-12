@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "main": "./dist-electron/main.js",
-  "packageManager": "pnpm@7.33.7",
+  "packageManager": "pnpm@10.16.0",
   "scripts": {
     "dev": "vite --mode development",
     "build": "vue-tsc && vite build && electron-builder",
