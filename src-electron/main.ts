@@ -41,7 +41,11 @@ app.on("window-all-closed", () => {
   app.exit();
 });
 
-// 修复electron18.0.0-beta.5 之后版本的BUG: 无法获取当前程序页面视频流
+/**
+ * @description 修复electron18.0.0-beta.5 之后版本的BUG: 无法获取当前程序页面视频流
+ * @description 据说 [v35.0.0](https://github.com/electron/electron/releases/tag/v35.0.0) 版本已经修复（未测试） | 详见 [#45000](https://github.com/electron/electron/pull/45000)
+ * @link https://github.com/electron/electron/issues/36037
+ */
 const selfWindws = async () =>
   await Promise.all(
     webContents

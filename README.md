@@ -11,6 +11,8 @@
 - `less` -D
 - `js-web-screen-shot` -S
 
+> [点击前往 **js-screen-shot** 仓库](https://github.com/likaia/js-screen-shot)
+
 ## 步骤
 
 1. `vite` 跑通 `electron`
@@ -32,7 +34,11 @@
 // electron主线程
 import { desktopCapturer, webContents } from "electron";
 
-// 修复electron18.0.0-beta.5 之后版本的BUG: 无法获取当前程序页面视频流
+/**
+ * @description 修复electron18.0.0-beta.5 之后版本的BUG: 无法获取当前程序页面视频流
+ * @description 据说 [v35.0.0](https://github.com/electron/electron/releases/tag/v35.0.0) 版本已经修复（未测试） | 详见 [#45000](https://github.com/electron/electron/pull/45000)
+ * @link https://github.com/electron/electron/issues/36037#issuecomment-1375008915
+ */
 const selfWindws = async () =>
   await Promise.all(
     webContents
@@ -124,7 +130,7 @@ import ScreenShot from "js-web-screen-shot";
 export const doScreenShot = async () => {
   // 下面这两块自己考虑
   const sources = await getDesktopCapturerSource(); // 这里返回的是设备上的所有窗口信息
-  // 这里可以对`sources`数组下面name进行判断，更具你当前窗口的标题名称找到当前的electron窗口
+  // 这里可以对`sources`数组下面name进行判断，根据你当前窗口的标题名称找到当前的electron窗口
   const stream = await getInitStream(
     sources.filter((e) => e.name == "你当前窗口的标题名称")[0]
   );
