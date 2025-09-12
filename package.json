@@ -73,12 +73,12 @@
     }
   },
   "dependencies": {
-    "bumpp": "^10.2.3",
     "js-web-screen-shot": "1.9.9-rc.27",
     "vue": "^3.2.47"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.1.0",
+    "bumpp": "^10.2.3",
     "electron": "^24.1.1",
     "electron-builder": "^23.6.0",
     "less": "^4.1.3",
