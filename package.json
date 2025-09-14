@@ -1,7 +1,7 @@
 {
   "name": "electron-js-web-screen-shot-demo",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./dist-electron/main.js",
   "packageManager": "pnpm@10.16.0",
   "scripts": {
