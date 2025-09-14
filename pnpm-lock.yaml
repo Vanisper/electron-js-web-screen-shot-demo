@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       js-web-screen-shot:
-        specifier: 1.9.9-rc.27
-        version: 1.9.9-rc.27
+        specifier: 1.9.9-rc.28
+        version: 1.9.9-rc.28
       vue:
         specifier: ^3.2.47
         version: 3.5.21(typescript@4.9.5)
@@ -1038,8 +1038,8 @@ packages:
     resolution: {integrity: sha512-twQoecYPiVA5K/h6SxtORw/Bs3ar+mLUtoPSc7iMXzQzK8d7eJ/R09wmTwAjiamETn1cXYPGfNnu7DMoHgu12w==}
     hasBin: true
 
-  js-web-screen-shot@1.9.9-rc.27:
-    resolution: {integrity: sha512-8eP0m28bSDE4EL5j4MglD1Kd8h+VCj7Kr3ApQS2xK22BFJo8qfG4bi0Tuh7t/oQIKNPROwOLSbzwiGhOR3dmIg==}
+  js-web-screen-shot@1.9.9-rc.28:
+    resolution: {integrity: sha512-Ae5uDAfNesdB2YryCk50ekHYq8tCmz0W/ZHT5qK26f7+jppCKq4UVL9OxRoIYVTQm6awOGVEBfdjlftkoayE+A==}
 
   js-yaml@4.1.0:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
@@ -2648,7 +2648,7 @@ snapshots:
 
   jiti@2.5.1: {}
 
-  js-web-screen-shot@1.9.9-rc.27:
+  js-web-screen-shot@1.9.9-rc.28:
     dependencies:
       html2canvas: 1.4.1
 

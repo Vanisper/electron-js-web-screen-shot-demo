@@ -25,8 +25,8 @@ const doScreenShot = async () => {
         title: "截图",
         icon: VueIcon,
         activeIcon: VueIcon,
-        clickFn() {
-          console.log("自定义按钮被点击了");
+        clickFn({ imgInfo }) {
+          console.log("自定义按钮被点击了", imgInfo);
         },
       }
     ]

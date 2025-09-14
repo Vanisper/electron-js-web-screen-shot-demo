@@ -73,7 +73,7 @@
     }
   },
   "dependencies": {
-    "js-web-screen-shot": "1.9.9-rc.27",
+    "js-web-screen-shot": "1.9.9-rc.28",
     "vue": "^3.2.47"
   },
   "devDependencies": {
